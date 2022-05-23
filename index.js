@@ -16,11 +16,17 @@ async function run() {
     try {
         await client.connect();
         const partsCollection = client.db('auto-parts').collection('parts');
+        const reviewCollection = client.db('auto-parts').collection('reviews');
 
         // load all parts
         app.get('/parts', async (req, res) => {
-            // const query = {};
             const result = await partsCollection.find().toArray();
+            res.send(result);
+        })
+
+        // load all reviews
+        app.get('/reviews', async (req, res) => {
+            const result = await reviewCollection.find().toArray();
             res.send(result);
         })
     }
