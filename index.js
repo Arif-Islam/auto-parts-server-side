@@ -17,6 +17,7 @@ async function run() {
         await client.connect();
         const partsCollection = client.db('auto-parts').collection('parts');
         const reviewCollection = client.db('auto-parts').collection('reviews');
+        const orderCollection = client.db('auto-parts').collection('orders');
 
         console.log('all routes should be working')
 
@@ -38,6 +39,13 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const result = await partsCollection.findOne(query);
             // console.log('loaded clicked item')
+            res.send(result);
+        })
+
+        // post order
+        app.post('/orders', async (req, res) => {
+            const order = req.body;
+            const result = await orderCollection.insertOne(order);
             res.send(result);
         })
     }
