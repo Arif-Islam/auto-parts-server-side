@@ -11,12 +11,14 @@ app.use(cors());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ymvsg.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
-
+console.log('uri', uri);
 async function run() {
     try {
         await client.connect();
         const partsCollection = client.db('auto-parts').collection('parts');
         const reviewCollection = client.db('auto-parts').collection('reviews');
+
+        console.log('all routes should be working')
 
         // load all parts
         app.get('/parts', async (req, res) => {
@@ -35,7 +37,7 @@ async function run() {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await partsCollection.findOne(query);
-            console.log('loaded clicked item')
+            // console.log('loaded clicked item')
             res.send(result);
         })
     }
