@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -20,8 +20,28 @@ async function run() {
         const reviewCollection = client.db('auto-parts').collection('reviews');
         const orderCollection = client.db('auto-parts').collection('orders');
         const paymentCollection = client.db('auto-parts').collection('payments');
+        const userCollection = client.db('auto-parts').collection('users');
 
         console.log('all routes should be working')
+
+        // create payment intent
+        app.post('/create-payment-intent', async (req, res) => {
+            const order = req.body;
+            const price = order.dollar;
+            const amount = price * 100;
+            console.log(amount);
+            // const paymentIntent = await stripe.paymentIntents.create({
+            //     amount: amount,
+            //     currency: 'usd',
+            //     payment_method_types: ['card']
+            // });
+
+            // console.log(paymentIntent)
+
+
+            // res.send({ clientSecret: paymentIntent.client_secret })
+            // console.log('client secret', clientSecret);
+        })
 
         // load all parts
         app.get('/parts', async (req, res) => {
@@ -73,18 +93,7 @@ async function run() {
             res.send(result);
         })
 
-        // create payment intent
-        app.post('/create-payment-intent', async (req, res) => {
-            const order = req.body;
-            const price = order.price;
-            const amount = price * 100;
-            const paymentIntent = await stripe.paymentIntents.create({
-                amount: amount,
-                currency: 'usd',
-                payment_method_types: ['card']
-            });
-            res.send({ clientSecret: paymentIntent.client_secret })
-        })
+
 
         // update payment 
         app.patch('/orders/:id', async (req, res) => {
@@ -99,7 +108,7 @@ async function run() {
             }
             const result = await paymentCollection.insertOne(payment);
             const updatedOrder = await orderCollection.updateOne(filter, updatedDoc);
-            res.send(updatedDoc);
+            res.send(updatedOrder);
         })
 
         // delete order
@@ -110,6 +119,38 @@ async function run() {
             res.send(result);
         })
 
+        // add user
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
+        })
+
+        // update user info
+        app.patch('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const userInfo = req.body;
+            const filter = { email: email };
+            const updateDoc = {
+                $set: userInfo
+            };
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+
+        // load particular user info
+        app.get('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const result = await userCollection.findOne(query);
+            res.send(result);
+        })
 
 
     }
