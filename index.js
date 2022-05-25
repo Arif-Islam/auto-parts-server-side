@@ -21,7 +21,7 @@ async function run() {
         const orderCollection = client.db('auto-parts').collection('orders');
         const paymentCollection = client.db('auto-parts').collection('payments');
 
-        // console.log('all routes should be working')
+        console.log('all routes should be working')
 
         // load all parts
         app.get('/parts', async (req, res) => {
