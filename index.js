@@ -49,6 +49,21 @@ async function run() {
             res.send(result);
         })
 
+        // add product
+        app.post('/parts', async (req, res) => {
+            const product = req.body;
+            const result = await partsCollection.insertOne(product);
+            res.send(result);
+        })
+
+        // delete product
+        app.delete('/parts/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await partsCollection.deleteOne(query);
+            res.send(result);
+        })
+
         // load all reviews
         app.get('/reviews', async (req, res) => {
             const result = await reviewCollection.find().toArray();
@@ -68,6 +83,12 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const result = await partsCollection.findOne(query);
             // console.log('loaded clicked item')
+            res.send(result);
+        })
+
+        // get all orders
+        app.get('/orders', async (req, res) => {
+            const result = await orderCollection.find().toArray();
             res.send(result);
         })
 
@@ -110,6 +131,20 @@ async function run() {
             const updatedOrder = await orderCollection.updateOne(filter, updatedDoc);
             res.send(updatedOrder);
         })
+
+        // make shipping
+        app.put('/orders/:id', async (req, res) => {
+            const id = req.params.id;
+            const deliver = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: deliver
+            };
+            const result = await orderCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
+        })
+
 
         // delete order
         app.delete('/orders/:id', async (req, res) => {
@@ -177,6 +212,8 @@ async function run() {
             const result = await userCollection.updateOne(filter, updateDoc);
             res.send(result);
         })
+
+
 
 
     }
