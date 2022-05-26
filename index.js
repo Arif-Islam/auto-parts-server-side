@@ -43,6 +43,18 @@ async function run() {
             // console.log('client secret', clientSecret);
         })
 
+        // verify admin function
+        const verifyAdmin = async (req, res, next) => {
+            const requester = req.decoded.email;
+            const requesterAccount = await userCollection.findOne({ email: requester });
+            if (requesterAccount.role === 'admin') {
+                next();
+            }
+            else {
+                res.status(403).send({ message: 'Forbidden access!' });
+            }
+        }
+
         // load all parts
         app.get('/parts', async (req, res) => {
             const result = await partsCollection.find().toArray();
@@ -100,12 +112,14 @@ async function run() {
         })
 
         // get orders by email
+        console.log('into orders')
         app.get('/orders', async (req, res) => {
+            console.log('inside orders')
             const email = req.query.email;
             console.log(email);
-            const query = { email: email };
+            const filter = { email: email };
             console.log(query);
-            const cursor = orderCollection.find(query);
+            const cursor = orderCollection.find(filter);
             // const result = await orderCollection.find(query).toArray();
             const result = await cursor.toArray();
             res.send(result);
@@ -208,7 +222,7 @@ async function run() {
         })
 
         // make admin
-        app.put('/users/admin/:email', async (req, res) => {
+        app.put('/users/admin/:email', verifyAdmin, async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
             const updateDoc = {
