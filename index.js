@@ -245,7 +245,7 @@ async function run() {
         })
 
         // get all users
-        app.get('/users', async (req, res) => {
+        app.get('/users', verifyJWT, async (req, res) => {
             const users = await userCollection.find().toArray();
             res.send(users);
         })
