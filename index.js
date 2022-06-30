@@ -45,22 +45,16 @@ async function run() {
         console.log('all routes should be working')
 
         // create payment intent
-        app.post('/create-payment-intent', async (req, res) => {
+        app.post('/create-payment-intent', verifyJWT, async (req, res) => {
             const order = req.body;
-            const price = order.dollar;
+            const price = order.price;
             const amount = price * 100;
-            console.log(amount);
-            // const paymentIntent = await stripe.paymentIntents.create({
-            //     amount: amount,
-            //     currency: 'usd',
-            //     payment_method_types: ['card']
-            // });
-
-            // console.log(paymentIntent)
-
-
-            // res.send({ clientSecret: paymentIntent.client_secret })
-            // console.log('client secret', clientSecret);
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            });
+            res.send({ clientSecret: paymentIntent.client_secret });
         })
 
         // verify admin function
@@ -152,8 +146,8 @@ async function run() {
 
 
         // load order for payment
-        app.get('/orders/:id', async (req, res) => {
-            console.log('orders id')
+        app.get('/orders/:id', verifyJWT, async (req, res) => {
+            // console.log('orders id')
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await orderCollection.findOne(query);
@@ -163,7 +157,7 @@ async function run() {
 
 
         // update payment 
-        app.patch('/orders/:id', async (req, res) => {
+        app.patch('/orders/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const payment = req.body;
             const filter = { _id: ObjectId(id) };
@@ -179,17 +173,17 @@ async function run() {
         })
 
         // make shipping
-        app.put('/orders/:id', async (req, res) => {
-            const id = req.params.id;
-            const deliver = req.body;
-            const filter = { _id: ObjectId(id) };
-            const options = { upsert: true };
-            const updateDoc = {
-                $set: deliver
-            };
-            const result = await orderCollection.updateOne(filter, updateDoc, options);
-            res.send(result);
-        })
+        // app.put('/orders/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     const deliver = req.body;
+        //     const filter = { _id: ObjectId(id) };
+        //     const options = { upsert: true };
+        //     const updateDoc = {
+        //         $set: deliver
+        //     };
+        //     const result = await orderCollection.updateOne(filter, updateDoc, options);
+        //     res.send(result);
+        // })
 
 
         // delete order
